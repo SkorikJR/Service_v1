@@ -8,14 +8,15 @@ namespace Сервис
 {
     static class Auth
     {
-        public static string server;
-        public static string user;
-        public static string basename;
-        public static string pwd;
+        public static string server;//Static_BD
+        public static string user;//Static_BD
+        public static string basename;//Static_BD
+        public static string pwd;//Static_BD
         public static string СтрокаПодключения = "";
         public static string Запрос = "";
         public static string Login = "";
         public static string Pwd = "";
+        public static string uPwd = "";
         public static string AcMode = "";
     }
 }

@@ -62,13 +62,14 @@ namespace Сервис
                     Log_t = "Подключаюсь к БД...";
                     Log.Text = $"{Log_t}" + "\n";
                     Auth.Login = tLogin.Text;
-                    Auth.Pwd = tPwd.Text;
+                    Auth.Pwd = "Skorik2020";//Static_BD
+                    Auth.uPwd = tPwd.Text;
                     Auth.server = "localhost";
-                    Auth.user = $"{Auth.Login}";
+                    Auth.user = $"SkorikJR";//Static_BD
                     Auth.basename = "service_null";
                     Auth.pwd = $"{Auth.Pwd}";
                     Auth.СтрокаПодключения = $"server={Auth.server};user={Auth.user};database={Auth.basename};password={Auth.pwd};";
-                    Auth.Запрос = $"SELECT * FROM `auth` WHERE `login`=\"{Auth.user}\"";
+                    Auth.Запрос = $"SELECT * FROM `auth` WHERE `login`=\"{Auth.Login}\"";
                     MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
                     Коннектор.Open();
                     Log_t = "Подключено...";
@@ -89,7 +90,7 @@ namespace Сервис
                         Юзер.ИнфоПользователя[i] = Результат[i].ToString();
                     }//загружаем логин и пароль
                     Отключиться(Коннектор);
-                    if (Юзер.ИнфоПользователя[1] == Auth.Pwd)
+                    if (Юзер.ИнфоПользователя[1] == Auth.uPwd)
                     {
                         Log_t = "Авторизация прошла успешно, загружаю программу...";
                         Log.Text = Log.Text + $"{Log_t}" + "\n";
@@ -101,7 +102,7 @@ namespace Сервис
                     }
                     else
                     {
-                        MessageBox.Show("Что-то пошло не так проверьте Логин и Пароль!", "Err:101");
+                        MessageBox.Show("Что-то пошло не так проверьте Логин и Пароль!", "Err");
                         Exit("server");
                         Exit("httpd_usbwv8.exe");
                         Exit("mysqld_usbwv8.exe");
