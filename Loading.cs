@@ -75,9 +75,9 @@ namespace Сервис
 
                     Отключиться(Коннектор);
                 }//загружаем количество записей в каждой из таблиц
-                ПодготовкаМассивов("1");
-                ПодготовкаМассивов("2");
-                ПодготовкаМассивов("3");
+                //ПодготовкаМассивов("1");
+                //ПодготовкаМассивов("2");
+                //ПодготовкаМассивов("3");
                 //ПодготовкаМассивов("4");//Выгружает все ремонты в массив(Без фильтра)
             }
             catch (Exception)
@@ -98,19 +98,19 @@ namespace Сервис
         {
             if (Acc=="God")
             {
-                this.Text = $"Добро пожаловать {Auth.user}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме SuperAdmin";
+                this.Text = $"Добро пожаловать {Auth.Sotrudnik[1]}  {Auth.Sotrudnik[3]}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме SuperAdmin";
             }
             else if (Acc == "Admin")
             {
-                this.Text = $"Добро пожаловать {Auth.user}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме Администратора";
+                this.Text = $"Добро пожаловать {Auth.Sotrudnik[1]}  {Auth.Sotrudnik[3]}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме Администратора";
             }
             else if (Acc == "Manager")
             {
-                this.Text = $"Добро пожаловать {Auth.user}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме Инженера";
+                this.Text = $"Добро пожаловать {Auth.Sotrudnik[1]}  {Auth.Sotrudnik[3]}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме Инженера";
             }
             else if (Acc == "Base")
             {
-                this.Text = $"Добро пожаловать {Auth.user}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме Пользователя";
+                this.Text = $"Добро пожаловать {Auth.Sotrudnik[1]}  {Auth.Sotrudnik[3]}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме Пользователя";
             }
         }//Деление по привилегиям
 
@@ -226,6 +226,7 @@ namespace Сервис
             }
                 this.Text = $"Подключение к {Auth.server}  выполнено успешно!";
         }
+
         public void ПодготовкаDataGrid(string[] N, DataGridView Grid)
 
         {
@@ -304,7 +305,7 @@ namespace Сервис
         public void MainData(string Условие, int Строки)//Генерация списка IDs ремонтов, которые подходят по условию.
         {
             Ремонты Rem = new Ремонты();
-            int Столбцы = 5;
+            int Столбцы = 6;
             Rem.ГотовыеРемонты = new string[Строки];
             Rem.МассивГотовыхРемонтов = new string[Строки, Столбцы];
             Rem.ПроблемныеРемонты = new string[Строки];
@@ -352,11 +353,11 @@ namespace Сервис
                     Коннектор.Open();
                     if (Условие == "Otremontirovano")
                     {
-                        Auth.Запрос = $"SELECT `ID`,`Type`,`Model`,`dOconchaniyaR`,`ID_Master` FROM `remont` WHERE `ID`={Rem.ГотовыеРемонты[i]}";
+                        Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`dOconchaniyaR`,`ID_Master` FROM `remont` WHERE `ID`={Rem.ГотовыеРемонты[i]}";
                     }
                     else if (Условие == "Problem")
                     {
-                        Auth.Запрос = $"SELECT `ID`,`Type`,`Model`,`DateOfPriem`,`ID_Master` FROM `remont` WHERE `ID`={Rem.ПроблемныеРемонты[i]}";
+                        Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`DateOfPriem`,`ID_Master` FROM `remont` WHERE `ID`={Rem.ПроблемныеРемонты[i]}";
                     }
                     
                     MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
@@ -382,7 +383,7 @@ namespace Сервис
                 if (Условие == "Otremontirovano")
                 {
                     int L = Rem.МассивГотовыхРемонтов.Length;
-                    int H = Rem.МассивГотовыхРемонтов.Length / 4;
+                    int H = Rem.МассивГотовыхРемонтов.Length / 6;
                     L /= H;
                     for (int i = 0; i < H; i++)
                     {
@@ -397,7 +398,7 @@ namespace Сервис
                 else if (Условие == "Problem")
                 {
                     int L = Rem.МассивПроблемныхРемонтов.Length;
-                    int H = Rem.МассивПроблемныхРемонтов.Length / 4;
+                    int H = Rem.МассивПроблемныхРемонтов.Length / 6;
                     L /= H;
                     for (int i = 0; i < H; i++)
                     {
@@ -432,21 +433,24 @@ namespace Сервис
             
             if (Столбец == "0")
             {
-            Auth.Запрос = $"SELECT * FROM `remont` WHERE `ID`={Выбрано}";
-            MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
-            MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
-            Коннектор.Open();
-            MySqlDataReader Результат = Комманда.ExecuteReader();
-            Результат.Read();
-            for (int ячейка = 0; ячейка < 21; ячейка++)
-            {
-                Результат[ячейка].ToString();
-                ДанныеДляОтбора.Ремонт[ячейка] = Результат[ячейка].ToString();
+                Auth.Запрос = $"SELECT * FROM `remont` WHERE `ID`={Выбрано}";
+                MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+                MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                Коннектор.Open();
+                MySqlDataReader Результат = Комманда.ExecuteReader();
+                Результат.Read();
+                for (int ячейка = 0; ячейка < 21; ячейка++)
+                {
+                    Результат[ячейка].ToString();
+                    ДанныеДляОтбора.Ремонт[ячейка] = Результат[ячейка].ToString();
 
+                }
+                Отключиться(Коннектор);
+                Remont O_Rem;
+                O_Rem = new Remont();
+                O_Rem.Show();
             }
-            Отключиться(Коннектор);
-            }
-            else if (Столбец == "4")
+            else if (Столбец == "5")
             {
             Auth.Запрос = $"SELECT * FROM `ingeeneer` WHERE `ID`={Выбрано}";
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
@@ -454,7 +458,7 @@ namespace Сервис
             Коннектор.Open();
             MySqlDataReader Результат = Комманда.ExecuteReader();
             Результат.Read();
-            for (int ячейка = 0; ячейка < 7; ячейка++)
+            for (int ячейка = 0; ячейка < 8; ячейка++)
             {
                     Результат[ячейка].ToString();
                     ДанныеИнженера.Инженер[ячейка] = Результат[ячейка].ToString();
@@ -468,8 +472,9 @@ namespace Сервис
 
         private void DgProblem_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            string Выбрано = dgReady.CurrentCell.Value.ToString();
-            string Столбец = dgReady.CurrentCell.ColumnIndex.ToString();
+            string Выбрано = dgProblem.CurrentCell.Value.ToString();
+            string Столбец = dgProblem.CurrentCell.ColumnIndex.ToString();
+            MessageBox.Show("Столбец: {Столбец } Выбрано: {Выбрано}");
 
             if (Столбец == "0")
             {
@@ -486,8 +491,11 @@ namespace Сервис
 
                 }
                 Отключиться(Коннектор);
+                Remont O_Rem;
+                O_Rem = new Remont();
+                O_Rem.Show();
             }
-            else if (Столбец == "4")
+            else if (Столбец == "5")
             {
                 Auth.Запрос = $"SELECT * FROM `ingeeneer` WHERE `ID`={Выбрано}";
                 MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
@@ -495,7 +503,7 @@ namespace Сервис
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
                 Результат.Read();
-                for (int ячейка = 0; ячейка < 7; ячейка++)
+                for (int ячейка = 0; ячейка < 8; ячейка++)
                 {
                     Результат[ячейка].ToString();
                     ДанныеИнженера.Инженер[ячейка] = Результат[ячейка].ToString();

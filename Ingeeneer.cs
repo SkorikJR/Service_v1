@@ -20,7 +20,7 @@ namespace Сервис
         {
             InitializeComponent();
         }
-        public int Столбцы = 7;
+        public int Столбцы = 8;
         public int Num = 0;
         public string ID_Master = ДанныеИнженера.Инженер[0];
         private void Ingeeneer_Load(object sender, EventArgs e)
@@ -54,6 +54,7 @@ namespace Сервис
             tNoTel.Text = $"{ДанныеИнженера.Инженер[4]}";
             tSpec.Text = $"{ДанныеИнженера.Инженер[5]}";
             tDatPriem.Text = $"{ДанныеИнженера.Инженер[6]}";
+            tNote.Text= $"{ДанныеИнженера.Инженер[7]}";
 
             try//Загрузка Фото
             {

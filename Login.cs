@@ -79,12 +79,12 @@ namespace Сервис
                     Результат.Read();
                     Пользователь Юзер = new Пользователь
                     {
-                        ИнфоПользователя = new string[3]
+                        ИнфоПользователя = new string[4]
                     };
                     Log_t = "Загружаю данные пользователя...";
                     Log.Text = Log.Text + "\n" + $"{ Log_t}" + "\n";
                     //while (Результат.Read())
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < 4; i++)
                     {
                         Результат[0].ToString();
                         Юзер.ИнфоПользователя[i] = Результат[i].ToString();
@@ -96,6 +96,7 @@ namespace Сервис
                         Log.Text = Log.Text + $"{Log_t}" + "\n";
                         Loading mainForm;
                         Auth.AcMode = Юзер.ИнфоПользователя[2];
+                        ЗагрузкаДанныхПользователя(int.Parse(Юзер.ИнфоПользователя[3]));
                         mainForm = new Loading();
                         mainForm.Show();
                         this.Hide();
@@ -118,7 +119,28 @@ namespace Сервис
                     System.Environment.Exit(0);
                     throw;
                 }
-            } 
+            }
+        }
+
+        private void ЗагрузкаДанныхПользователя(int ID)
+        {
+            Auth.Запрос = $"SELECT * FROM `ingeeneer` WHERE `ID`={ID}";
+            MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+            MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+            Коннектор.Open();
+            MySqlDataReader Результат = Комманда.ExecuteReader();
+            Результат.Read();
+            for (int ячейка = 0; ячейка < 8; ячейка++)
+            {
+                Результат[ячейка].ToString();
+               Auth.Sotrudnik[ячейка] = Результат[ячейка].ToString();
+            }
+            Отключиться(Коннектор);
+        }
+
+        private void PictureBox1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

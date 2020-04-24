@@ -18,5 +18,6 @@ namespace Сервис
         public static string Pwd = "";
         public static string uPwd = "";
         public static string AcMode = "";
+        public static string[] Sotrudnik = new string[8];//Данные сотрудника
     }
 }

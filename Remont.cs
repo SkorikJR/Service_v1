@@ -19,36 +19,19 @@ namespace Сервис
         {
             InitializeComponent();
         }
-
-        //Участок, отвечающий за подгрузку Фото ремонта.
-        private void BReNew_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                Удалить_фото(int.Parse(ДанныеДляОтбора.Ремонт[0]));
-                Загрузить_фото(int.Parse(ДанныеДляОтбора.Ремонт[0]));
-            }
-            catch (Exception)
-            {
-                Загрузить_фото(int.Parse(ДанныеДляОтбора.Ремонт[0]));
-                MessageBox.Show("Возможно вы выбрали слишком большое изображение!", "Ошибка");
-                throw;
-            }
-
-        }
         private void Remont_Load(object sender, EventArgs e)
         {
             this.Text += ДанныеДляОтбора.Ремонт[0];
-            try//Загрузка Фото
-            {
-                Подгрузка_фото(int.Parse(ДанныеДляОтбора.Ремонт[0]));
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Ошибка загрузки Фото!", "Err");
+            //try//Загрузка Фото
+            //{
+                //Подгрузка_фото(int.Parse(ДанныеДляОтбора.Ремонт[0]));
+            //}
+            //catch (Exception)
+            //{
+                //MessageBox.Show("Ошибка загрузки Фото!", "Err");
 
-                throw;
-            }
+                //throw;
+            //}
         }
         private void Удалить_фото(int Id)
         {
