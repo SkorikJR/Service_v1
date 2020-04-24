@@ -149,7 +149,7 @@ namespace Сервис
             Филиалы Filial = new Филиалы();//Создаем обьекты наших публичных массивов
             Инженеры Ing = new Инженеры();
             Клиенты Kl = new Клиенты();
-            Ремонты Rem = new Ремонты();
+ 
 
             string Table = "";
             int Count = 0;
@@ -182,7 +182,7 @@ namespace Сервис
                 Table = СписокТаблиц[3];
                 Count = remont;
                 Row = 21;
-                Rem.МассивРемонтов = new string[remont, Row];
+                ДанныеДляОтбора.Все_Ремонты = new string[remont, Row];
             }
             else {MessageBox.Show("Что-то пошло не так, обратитесь к поставщику БД!");}
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
@@ -215,8 +215,8 @@ namespace Сервис
                     }
                     else if (int.Parse(НомерТаблицы) == 4)
                     {
-                        
-                        Rem.МассивРемонтов[(строка - 1), ячейка] = Результат[ячейка].ToString();
+
+                        ДанныеДляОтбора.Все_Ремонты[(строка - 1), ячейка] = Результат[ячейка].ToString();
                     }
                     else { MessageBox.Show("Что-то пошло не так, обратитесь к поставщику БД!"); }
 
@@ -468,10 +468,8 @@ namespace Сервис
 
         private void DgProblem_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            string Строка = dgReady.CurrentRow.Index.ToString();
             string Выбрано = dgReady.CurrentCell.Value.ToString();
             string Столбец = dgReady.CurrentCell.ColumnIndex.ToString();
-            this.Text = $"Строка: {Строка} Столбец: {Столбец}  Содержимое: {Выбрано} ";
 
             if (Столбец == "0")
             {
@@ -497,13 +495,33 @@ namespace Сервис
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
                 Результат.Read();
-                for (int ячейка = 0; ячейка < 5; ячейка++)
+                for (int ячейка = 0; ячейка < 7; ячейка++)
                 {
                     Результат[ячейка].ToString();
                     ДанныеИнженера.Инженер[ячейка] = Результат[ячейка].ToString();
                 }
                 Отключиться(Коннектор);
+                Ingeeneer O_ing;
+                O_ing = new Ingeeneer();
+                O_ing.Show();
             }
+        }
+
+        private void BExit_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+            Login Out;
+            Out = new Login();
+           Out.Show();
+        }
+
+        private void BOpenAll_Click(object sender, EventArgs e)
+        {
+            All_Rem Open_all;
+            Open_all = new All_Rem();
+            Open_all.Show();
+            ///////
+            
         }
     }
 }
