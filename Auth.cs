@@ -19,5 +19,11 @@ namespace Сервис
         public static string uPwd = "";
         public static string AcMode = "";
         public static string[] Sotrudnik = new string[8];//Данные сотрудника
+        public static string[,] Sotrudnik_All;//Данные сотрудников(Всех, для выборки)
+        public static string[,] Klient_All;//Данные сотрудников(Всех, для выборки)
+        public static string[,] Filial_All;//Данные филиалов(Всех, для выборки)
+        public static string[,] Remont_All;//Данные филиалов(Всех, для выборки)
+        public static int ВсегоРемонтов;
+        public static int ВсегоСотрудников;
     }
 }

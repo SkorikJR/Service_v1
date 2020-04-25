@@ -8,7 +8,9 @@ namespace Сервис
 {
     static class ДанныеДляОтбора
     {
-        public static string[] Ремонт = new string[21];
+        public static int КолСтр = 29;
+        public static string[] Ремонт = new string[ДанныеДляОтбора.КолСтр];
+        public static int КолФилиалов;
         public static string[,] Все_Ремонты;
     }
 }

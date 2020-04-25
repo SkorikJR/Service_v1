@@ -8,6 +8,6 @@ namespace Сервис
 {
     static class ДанныеИнженера
     {
-        public static string[] Инженер = new string[8];
+        public static string[] Инженер = new string[10];
     }
 }

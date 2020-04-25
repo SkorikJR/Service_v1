@@ -58,15 +58,18 @@ namespace Сервис
                     {
                         case 0:
                             filial = int.Parse(Результат[0].ToString());
+                            ДанныеДляОтбора.КолФилиалов = filial;
                             break;
                         case 1:
                             ingeeneer = int.Parse(Результат[0].ToString());
+                            Auth.ВсегоСотрудников = ingeeneer;
                             break;
                         case 2:
                             klient = int.Parse(Результат[0].ToString());
                             break;
                         case 3:
                             remont = int.Parse(Результат[0].ToString());
+                            Auth.ВсегоРемонтов = remont;
                             break;
                         default:
                             MessageBox.Show("Что-то пошло не так, обратитесь к поставщику БД!");
@@ -75,10 +78,6 @@ namespace Сервис
 
                     Отключиться(Коннектор);
                 }//загружаем количество записей в каждой из таблиц
-                //ПодготовкаМассивов("1");
-                //ПодготовкаМассивов("2");
-                //ПодготовкаМассивов("3");
-                //ПодготовкаМассивов("4");//Выгружает все ремонты в массив(Без фильтра)
             }
             catch (Exception)
             {
@@ -88,6 +87,10 @@ namespace Сервис
                 System.Environment.Exit(0);
                 throw;
             }
+            ПодготовкаМассивов("1");//Филиалы
+            ПодготовкаМассивов("2");
+            ПодготовкаМассивов("3");
+            //ПодготовкаМассивов("4");//Выгружает все ремонты в массив(Без фильтра)
             MainData_n("Ready");
             MainData_n("Problem");
             Access(Auth.AcMode);//Auth.AcMode для отображения Прав пользователя
@@ -104,7 +107,7 @@ namespace Сервис
             {
                 this.Text = $"Добро пожаловать {Auth.Sotrudnik[1]}  {Auth.Sotrudnik[3]}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме Администратора";
             }
-            else if (Acc == "Manager")
+            else if (Acc == "Ingeen")
             {
                 this.Text = $"Добро пожаловать {Auth.Sotrudnik[1]}  {Auth.Sotrudnik[3]}! Вы подключены к базе {Auth.basename} на сервере {Auth.server} в режиме Инженера";
             }
@@ -146,11 +149,6 @@ namespace Сервис
 
         public void ПодготовкаМассивов(string НомерТаблицы)
         {
-            Филиалы Filial = new Филиалы();//Создаем обьекты наших публичных массивов
-            Инженеры Ing = new Инженеры();
-            Клиенты Kl = new Клиенты();
- 
-
             string Table = "";
             int Count = 0;
             int Row = 0;
@@ -161,27 +159,27 @@ namespace Сервис
                 Table = СписокТаблиц[0];
                 Count = filial;
                 Row = 6;
-                Filial.МассивФилиалов = new string[filial, Row];
+                Auth.Filial_All = new string[filial, Row];
             }
             else if(int.Parse(НомерТаблицы)==2)
             {
                 Table = СписокТаблиц[1];//название таблицы из массива
                 Count = ingeeneer;//количество записей, получаем в Form_load
-                Row = 5;//статическое количество столбцов
-                Ing.МассивИнженеров = new string[ingeeneer, Row];//инициализируем массив
+                Row = 8;//статическое количество столбцов
+                Auth.Sotrudnik_All = new string[ingeeneer, Row];//инициализируем массив
             }
             else if(int.Parse(НомерТаблицы) == 3)
             {
                 Table = СписокТаблиц[2];
                 Count = klient;
-                Row = 5;
-                Kl.МассивКлиентов = new string[klient, Row];
+                Row = 8;
+                Auth.Klient_All = new string[klient, Row];
             }
             else if(int.Parse(НомерТаблицы) == 4)
             {
                 Table = СписокТаблиц[3];
                 Count = remont;
-                Row = 21;
+                Row = ДанныеДляОтбора.КолСтр;
                 ДанныеДляОтбора.Все_Ремонты = new string[remont, Row];
             }
             else {MessageBox.Show("Что-то пошло не так, обратитесь к поставщику БД!");}
@@ -189,9 +187,10 @@ namespace Сервис
             int строка = 1;
             for (int i = 0; i < Count; i++)//цикл выгрузки значений в обьявленные массивы (Внешний цикл - строки, а внутренний - ячейки)
             {
-                Коннектор.Open();
+                
                 Auth.Запрос = $"SELECT * FROM `{Table}` WHERE `ID`={строка}";
                 MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
                 Результат.Read();
                 for (int ячейка = 0; ячейка < Row; ячейка++)
@@ -201,17 +200,17 @@ namespace Сервис
                     if (int.Parse(НомерТаблицы) == 1)
                     {
 
-                        Filial.МассивФилиалов[(строка - 1), ячейка] = Результат[ячейка].ToString();
+                        Auth.Filial_All[(строка - 1), ячейка] = Результат[ячейка].ToString();
                     }
                     else if (int.Parse(НомерТаблицы) == 2)
                     {
                         
-                        Ing.МассивИнженеров[(строка - 1), ячейка] = Результат[ячейка].ToString();
+                        Auth.Sotrudnik_All[(строка - 1), ячейка] = Результат[ячейка].ToString();
                     }
                     else if (int.Parse(НомерТаблицы) == 3)
                     {
                         
-                        Kl.МассивКлиентов[(строка - 1), ячейка] = Результат[ячейка].ToString();
+                        Auth.Klient_All[(строка - 1), ячейка] = Результат[ячейка].ToString();
                     }
                     else if (int.Parse(НомерТаблицы) == 4)
                     {
@@ -357,7 +356,7 @@ namespace Сервис
                     }
                     else if (Условие == "Problem")
                     {
-                        Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`DateOfPriem`,`ID_Master` FROM `remont` WHERE `ID`={Rem.ПроблемныеРемонты[i]}";
+                        Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`DateOfPriem`,`Prinyal` FROM `remont` WHERE `ID`={Rem.ПроблемныеРемонты[i]}";
                     }
                     
                     MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
@@ -369,10 +368,20 @@ namespace Сервис
                         if (Условие == "Otremontirovano")
                         {
                             Rem.МассивГотовыхРемонтов[(строка - 1), ячейка] = Результат[ячейка].ToString();
+                            if (ячейка == 5)
+                            {
+                                int temp = int.Parse(Rem.МассивГотовыхРемонтов[(строка - 1), ячейка]) - 1;
+                                Rem.МассивГотовыхРемонтов[(строка - 1), ячейка] = Auth.Sotrudnik_All[temp, 2];
+                            }//попытка автозамены "На лету"
                         }
                         else if (Условие == "Problem")
                         {
                             Rem.МассивПроблемныхРемонтов[(строка - 1), ячейка] = Результат[ячейка].ToString();
+                            if (ячейка == 5)
+                            {
+                                int temp = int.Parse(Rem.МассивПроблемныхРемонтов[(строка - 1), ячейка]) - 1;
+                                Rem.МассивПроблемныхРемонтов[(строка - 1), ячейка] = Auth.Sotrudnik_All[temp, 2];
+                            }//попытка автозамены "На лету"
                         }
                         
                     }
@@ -439,7 +448,7 @@ namespace Сервис
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
                 Результат.Read();
-                for (int ячейка = 0; ячейка < 21; ячейка++)
+                for (int ячейка = 0; ячейка < ДанныеДляОтбора.КолСтр; ячейка++)
                 {
                     Результат[ячейка].ToString();
                     ДанныеДляОтбора.Ремонт[ячейка] = Результат[ячейка].ToString();
@@ -450,7 +459,7 @@ namespace Сервис
                 O_Rem = new Remont();
                 O_Rem.Show();
             }
-            else if (Столбец == "5")
+            /*else if (Столбец == "5")
             {
             Auth.Запрос = $"SELECT * FROM `ingeeneer` WHERE `ID`={Выбрано}";
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
@@ -467,14 +476,13 @@ namespace Сервис
                 Ingeeneer O_ing;
                 O_ing = new Ingeeneer();
                 O_ing.Show();
-            }
+            }*/
         }
 
         private void DgProblem_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             string Выбрано = dgProblem.CurrentCell.Value.ToString();
             string Столбец = dgProblem.CurrentCell.ColumnIndex.ToString();
-            MessageBox.Show("Столбец: {Столбец } Выбрано: {Выбрано}");
 
             if (Столбец == "0")
             {
@@ -484,7 +492,7 @@ namespace Сервис
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
                 Результат.Read();
-                for (int ячейка = 0; ячейка < 21; ячейка++)
+                for (int ячейка = 0; ячейка < ДанныеДляОтбора.КолСтр; ячейка++)
                 {
                     Результат[ячейка].ToString();
                     ДанныеДляОтбора.Ремонт[ячейка] = Результат[ячейка].ToString();
@@ -495,7 +503,7 @@ namespace Сервис
                 O_Rem = new Remont();
                 O_Rem.Show();
             }
-            else if (Столбец == "5")
+            /*else if (Столбец == "5")
             {
                 Auth.Запрос = $"SELECT * FROM `ingeeneer` WHERE `ID`={Выбрано}";
                 MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
@@ -512,7 +520,7 @@ namespace Сервис
                 Ingeeneer O_ing;
                 O_ing = new Ingeeneer();
                 O_ing.Show();
-            }
+            }*/
         }
 
         private void BExit_Click(object sender, EventArgs e)
@@ -521,7 +529,7 @@ namespace Сервис
             Login Out;
             Out = new Login();
            Out.Show();
-        }
+        }//Возврат на страницу авторизации
 
         private void BOpenAll_Click(object sender, EventArgs e)
         {
@@ -529,7 +537,14 @@ namespace Сервис
             Open_all = new All_Rem();
             Open_all.Show();
             ///////
-            
+        }
+
+        private void BOpenIng_Click(object sender, EventArgs e)
+        {
+            All_Ing Open_all;
+            Open_all = new All_Ing();
+            Open_all.Show();
+            ///////
         }
     }
 }
