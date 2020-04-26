@@ -23,10 +23,11 @@ namespace Сервис
         public int Столбцы = 8;
         public int NumOfRem = 0;
         public string ID_Master = ДанныеИнженера.Инженер[0];
+        public int Foto;
         private void Ingeeneer_Load(object sender, EventArgs e)
         {
-            Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `ID_Master`={ID_Master} AND `Vidano` = 0";
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+            Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `ID_Master`={ID_Master} AND `Vidano` = 0";
             Коннектор.Open();
             MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
             MySqlDataReader Результат = Комманда.ExecuteReader();
@@ -57,6 +58,31 @@ namespace Сервис
             {
                 MessageBox.Show("У данного инженера нет ремонтов в работе!");
             }
+            try
+            {
+                Auth.Запрос = $"SELECT COUNT(*) FROM `ingeeneer_f` WHERE `Id` = {ID_Master}";
+                MySqlCommand Комманда_f = new MySqlCommand(Auth.Запрос, Коннектор);
+                Коннектор.Open();
+                MySqlDataReader Результат_f = Комманда_f.ExecuteReader();
+                while (Результат_f.Read())
+                {
+                    Foto = int.Parse(Результат_f[0].ToString());
+                }
+                Отключиться(Коннектор);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось проверить наличие фото, проверьте подключение к БД!", "Err");
+                throw;
+            }
+            if (Foto > 0)
+            {
+                Подгрузка_фото(int.Parse(ДанныеИнженера.Инженер[0]));
+            }
+            else
+            {
+                MessageBox.Show("Отсутствует фото! Загрузите фото инженера.");
+            }
             this.Text += $" ИД = {ДанныеИнженера.Инженер[0]}";
             tName.Text = $"{ДанныеИнженера.Инженер[1]}";
             tFam.Text = $"{ДанныеИнженера.Инженер[2]}";
@@ -65,17 +91,6 @@ namespace Сервис
             tSpec.Text = $"{ДанныеИнженера.Инженер[5]}";
             tDatPriem.Text = $"{ДанныеИнженера.Инженер[6]}";
             tNote.Text= $"{ДанныеИнженера.Инженер[7]}";
-
-            try//Загрузка Фото
-            {
-                Подгрузка_фото(int.Parse(ДанныеИнженера.Инженер[0]));
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Ошибка загрузки Фото!", "Err");
-
-                throw;
-            }
         }
 
         private string[] IDRem(string ID_Master)

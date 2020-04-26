@@ -22,59 +22,84 @@ namespace Сервис
 
         public int Столбцы = 8;
         public int КоличествоГР = 0;
+        public int Count_Kl;
         private void All_klients_Load(object sender, EventArgs e)
         {
-            int строка = 1;
-            Auth.Klient_All = new string[Auth.ВсегоКлиентов, Столбцы + 1];//+1 это вычисляемое поле!
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
-            for (int i = 0; i < Auth.ВсегоКлиентов; i++)
+            try
             {
-                Auth.Запрос = $"SELECT * FROM `klient` WHERE `ID`={строка}";
+                Auth.Запрос = $"SELECT COUNT(*) FROM `klient`";
                 MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
-                Результат.Read();
-                for (int ячейка = 0; ячейка < Столбцы; ячейка++)
+                while (Результат.Read())
                 {
-                    Auth.Klient_All[i, ячейка] = Результат[ячейка].ToString();
+                    Count_Kl = int.Parse(Результат[0].ToString());
                 }
-                строка = ++строка;
                 Отключиться(Коннектор);
-            }//Выгруз из базы
-            try
-            {
-                for (int i = 0; i < Auth.ВсегоКлиентов; i++)
-                {
-                    Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `ID_Klient` = {(i+1)} AND `Vidano` = 1 AND `Vidano_BR` = 0";
-                    MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
-                    Коннектор.Open();
-                    MySqlDataReader Результат = Комманда.ExecuteReader();
-                    while (Результат.Read())
-                    {
-                        //КоличествоГР = int.Parse(Результат[0].ToString());
-                        Auth.Klient_All[i,8] = Результат[0].ToString();
-                    }
-                    Отключиться(Коннектор);
-                }
             }
             catch (Exception)
             {
-                MessageBox.Show("Не удалось посчитать ремонты!","Err");
+                MessageBox.Show("Не удалось получить количество клиентов! Проверьте подключение к БД.","Err");
                 throw;
             }
-            
-
-            int L = Auth.Klient_All.Length;
-            int H = Auth.Klient_All.Length / Столбцы;
-            L /= H;
-            for (int i = 0; i < H; i++)
+            if (Count_Kl > 0)
             {
-                string[] Tmp = new string[L];
-                for (int j = 0; j < L; j++)
+                int строка = 1;
+                Auth.Klient_All = new string[Count_Kl, Столбцы + 1];//+1 это вычисляемое поле!
+                for (int i = 0; i < Count_Kl; i++)
                 {
-                    Tmp[j] = Auth.Klient_All[i, j];
+                    Auth.Запрос = $"SELECT * FROM `klient` WHERE `ID`={строка}";
+                    MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                    Коннектор.Open();
+                    MySqlDataReader Результат = Комманда.ExecuteReader();
+                    Результат.Read();
+                    for (int ячейка = 0; ячейка < Столбцы; ячейка++)
+                    {
+                        Auth.Klient_All[i, ячейка] = Результат[ячейка].ToString();
+                    }
+                    строка = ++строка;
+                    Отключиться(Коннектор);
+                }//Выгруз из базы
+                try
+                {
+                    for (int i = 0; i < Auth.ВсегоКлиентов; i++)
+                    {
+                        Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `ID_Klient` = {(i + 1)} AND `Vidano` = 1 AND `Vidano_BR` = 0";
+                        MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                        Коннектор.Open();
+                        MySqlDataReader Результат = Комманда.ExecuteReader();
+                        while (Результат.Read())
+                        {
+                            //КоличествоГР = int.Parse(Результат[0].ToString());
+                            Auth.Klient_All[i, 8] = Результат[0].ToString();
+                        }
+                        Отключиться(Коннектор);
+                    }
                 }
-                ПодготовкаDataGrid(Tmp, dataGridView1);
+                catch (Exception)
+                {
+                    MessageBox.Show("Не удалось посчитать ремонты!", "Err");
+                    throw;
+                }
+
+
+                int L = Auth.Klient_All.Length;
+                int H = Auth.Klient_All.Length / Столбцы;
+                L /= H;
+                for (int i = 0; i < H; i++)
+                {
+                    string[] Tmp = new string[L];
+                    for (int j = 0; j < L; j++)
+                    {
+                        Tmp[j] = Auth.Klient_All[i, j];
+                    }
+                    ПодготовкаDataGrid(Tmp, dataGridView1);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Клиентов в БД нет. Плохо работаете =)");
             }
         }
 
@@ -91,7 +116,7 @@ namespace Сервис
         {
             Коннектор.Close();
         }//отключение от БД
-        private void DataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        private void DataGridView1_CellMouseDoubleClick_1(object sender, DataGridViewCellMouseEventArgs e)
         {
             string Выбрано = dataGridView1.CurrentCell.Value.ToString();
             string Столбец = dataGridView1.CurrentCell.ColumnIndex.ToString();
