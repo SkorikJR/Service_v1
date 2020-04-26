@@ -27,9 +27,9 @@ namespace Сервис
             int строка = 1;
             Auth.Sotrudnik_All = new string[Auth.ВсегоСотрудников, Столбцы];
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
-            for (int i = 0; i < Auth.ВсегоРемонтов; i++)
+            for (int i = 0; i < Auth.ВсегоСотрудников; i++)
             {
-                Auth.Запрос = $"SELECT * FROM `ingeeneer` WHERE `ID`={строка}";
+                Auth.Запрос = $"SELECT * FROM `ingeeneer` WHERE `ID`=\"{строка}\"";
                 MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();

@@ -13,68 +13,71 @@ using System.IO;
 
 namespace Сервис
 {
-    public partial class All_Rem : Form
+    public partial class All_klients : Form
     {
-        public All_Rem()
+        public All_klients()
         {
             InitializeComponent();
         }
-        public int Столбцы = 11;
-        private void All_Rem_Load(object sender, EventArgs e)//Нужно довести до ума!
+
+        public int Столбцы = 8;
+        public int КоличествоГР = 0;
+        private void All_klients_Load(object sender, EventArgs e)
         {
             int строка = 1;
-            Auth.Remont_All = new string[Auth.ВсегоРемонтов, Столбцы];
+            Auth.Klient_All = new string[Auth.ВсегоКлиентов, Столбцы + 1];//+1 это вычисляемое поле!
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
-            for (int i = 0; i < Auth.ВсегоРемонтов; i++)
+            for (int i = 0; i < Auth.ВсегоКлиентов; i++)
             {
-                Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`DateOfPriem`,`Filial_Now`,`Prinyal`,`Prodiagnostirovan`,`Otremontirovano`,`Problem`,`Vidano` FROM `remont` WHERE `ID`={строка}";
+                Auth.Запрос = $"SELECT * FROM `klient` WHERE `ID`={строка}";
                 MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
                 Результат.Read();
-                for (int ячейка = 0; ячейка < Столбцы; ячейка ++)
+                for (int ячейка = 0; ячейка < Столбцы; ячейка++)
                 {
-                    Auth.Remont_All[i, ячейка] = Результат[ячейка].ToString();
-                    if (ячейка == 5)
-                    {
-                        int temp = int.Parse(Auth.Remont_All[i, ячейка]) - 1;
-                        Auth.Remont_All[i, ячейка] = Auth.Filial_All[temp, 2];
-                    }//попытка автозамены "На лету"
-                    if (ячейка == 6)
-                    {
-                        int temp = int.Parse(Auth.Remont_All[i, ячейка]) - 1;
-                        Auth.Remont_All[i, ячейка] = Auth.Sotrudnik_All[temp, 2];
-                    }//попытка автозамены "На лету"
-                    if (ячейка == 7 | ячейка == 8 | ячейка == 9 | ячейка == 10)
-                    {
-                        if (int.Parse(Auth.Remont_All[i, ячейка]) == 0)
-                        {
-                            Auth.Remont_All[i, ячейка] = "false";
-                        }
-                        else if (int.Parse(Auth.Remont_All[i, ячейка]) == 1)
-                        {
-                            Auth.Remont_All[i, ячейка] = "true";
-                        }
-                    }//Меняем "0" и "1" на чекбокс
+                    Auth.Klient_All[i, ячейка] = Результат[ячейка].ToString();
                 }
                 строка = ++строка;
                 Отключиться(Коннектор);
             }//Выгруз из базы
+            try
+            {
+                for (int i = 0; i < Auth.ВсегоКлиентов; i++)
+                {
+                    Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `ID_Klient` = {(i+1)} AND `Vidano` = 1 AND `Vidano_BR` = 0";
+                    MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                    Коннектор.Open();
+                    MySqlDataReader Результат = Комманда.ExecuteReader();
+                    while (Результат.Read())
+                    {
+                        //КоличествоГР = int.Parse(Результат[0].ToString());
+                        Auth.Klient_All[i,8] = Результат[0].ToString();
+                    }
+                    Отключиться(Коннектор);
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось посчитать ремонты!","Err");
+                throw;
+            }
+            
 
-
-            int L = Auth.Remont_All.Length;
-            int H = Auth.Remont_All.Length / Столбцы;
+            int L = Auth.Klient_All.Length;
+            int H = Auth.Klient_All.Length / Столбцы;
             L /= H;
             for (int i = 0; i < H; i++)
             {
                 string[] Tmp = new string[L];
                 for (int j = 0; j < L; j++)
                 {
-                    Tmp[j] = Auth.Remont_All[i, j];
+                    Tmp[j] = Auth.Klient_All[i, j];
                 }
                 ПодготовкаDataGrid(Tmp, dataGridView1);
             }
         }
+
         public void ПодготовкаDataGrid(string[] N, DataGridView Grid)
 
         {
@@ -88,7 +91,6 @@ namespace Сервис
         {
             Коннектор.Close();
         }//отключение от БД
-
         private void DataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             string Выбрано = dataGridView1.CurrentCell.Value.ToString();
@@ -96,21 +98,21 @@ namespace Сервис
 
             if (Столбец == "0")
             {
-                Auth.Запрос = $"SELECT * FROM `remont` WHERE `ID`={Выбрано}";
+                Auth.Запрос = $"SELECT * FROM `klient` WHERE `ID`={Выбрано}";
                 MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
                 MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
                 Результат.Read();
-                for (int ячейка = 0; ячейка < ДанныеДляОтбора.КолСтр; ячейка++)
+                for (int ячейка = 0; ячейка < Столбцы; ячейка++)
                 {
                     Результат[ячейка].ToString();
-                    ДанныеДляОтбора.Ремонт[ячейка] = Результат[ячейка].ToString();
+                    Auth.Klient[ячейка] = Результат[ячейка].ToString();
                 }
                 Отключиться(Коннектор);
-                Remont O_Rem;
-                O_Rem = new Remont();
-                O_Rem.Show();
+                Klient O_Kl;
+                O_Kl = new Klient();
+                O_Kl.Show();
             }
         }
     }

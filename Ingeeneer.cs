@@ -21,15 +21,25 @@ namespace Сервис
             InitializeComponent();
         }
         public int Столбцы = 8;
-        public int Num = 0;
+        public int NumOfRem = 0;
         public string ID_Master = ДанныеИнженера.Инженер[0];
         private void Ingeeneer_Load(object sender, EventArgs e)
         {
-            Num = NRem(ДанныеИнженера.Инженер[0]);
-            if (Num > 0)
+            Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `ID_Master`={ID_Master} AND `Vidano` = 0";
+            MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+            Коннектор.Open();
+            MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+            MySqlDataReader Результат = Комманда.ExecuteReader();
+            while (Результат.Read())
             {
-                string[] Tmp_IDRem = IDRem(ДанныеИнженера.Инженер[0], Num);
-                string[,] ремонты = Ремонты(Tmp_IDRem, Num);
+                NumOfRem = int.Parse(Результат[0].ToString());
+            }
+            Отключиться(Коннектор);
+            //Num = NRem(ДанныеИнженера.Инженер[0]);//?????????????????????????????
+            if (NumOfRem > 0)
+            {
+                string[] Tmp_IDRem = IDRem(ДанныеИнженера.Инженер[0]);
+                string[,] ремонты = Ремонты(Tmp_IDRem, NumOfRem);
                 int L = ремонты.Length;
                 int H = ремонты.Length / 7;
                 L /= H;
@@ -43,7 +53,7 @@ namespace Сервис
                     ПодготовкаDataGrid(Tmp, dataGridView1);
                 }
             }
-            else if (Num <= 0)
+            else if (NumOfRem <= 0)
             {
                 MessageBox.Show("У данного инженера нет ремонтов в работе!");
             }
@@ -68,9 +78,9 @@ namespace Сервис
             }
         }
 
-        private string[] IDRem(string ID_Master,int Num)
+        private string[] IDRem(string ID_Master)
         {
-            string[] Ids = new string[Num];
+            string[] Ids = new string[this.NumOfRem];
             Auth.Запрос = $"SELECT `ID` FROM `remont` WHERE `ID_Master`={ID_Master} AND `Vidano` = 0";
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
             Коннектор.Open();
@@ -94,42 +104,21 @@ namespace Сервис
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
             for (int i = 0; i < Num; i++)
             {
-                Auth.Запрос = $"SELECT `ID`,`Type`,`Model`,`SN`,`Neispravnost`,`DateOfPriem`,`RezDiag` FROM `remont` WHERE `ID`={Ids[i]}";
+                Auth.Запрос = $"SELECT `ID`,`Type`,`Model`,`SN`,`Neispravnost`,`DateOfPriem`,`RezDiag` FROM `remont` WHERE `ID`=\"{Ids[i]}\"";
                 MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
-                int Clc = 0;
                 Результат.Read();
-                for (; Clc < 7;)
+                for (int Clc = 0; Clc < 7;Clc++)
                 {
-                    Результат[0].ToString();
                     string Ячейка = Результат[Clc].ToString();
                     ремонты[i, Clc] = Ячейка;
-                    Clc = ++Clc;
                 } 
                 Отключиться(Коннектор);
             }
 
             return ремонты;
         }//Получаем список ремонтов(Не выданных)
-
-        private int NRem(string ID_Master)
-        {
-            string Tmp = "";
-            MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
-            Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `ID_Master`={ID_Master}";
-            MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
-            Коннектор.Open();
-            MySqlDataReader Результат = Комманда.ExecuteReader();
-            while (Результат.Read())
-            {
-                Результат[0].ToString();
-                Tmp = Результат[0].ToString();
-            }
-            Отключиться(Коннектор);
-            int Num = int.Parse(Tmp);
-            return Num;
-        }//получаем количество ремонтов(Не выданных)
         public void ПодготовкаDataGrid(string[] N, DataGridView Grid)
 
         {
@@ -157,16 +146,15 @@ namespace Сервис
                 Коннектор.Open();
                 MySqlDataReader Результат = Комманда.ExecuteReader();
                 Результат.Read();
-                for (int ячейка = 0; ячейка < 21; ячейка++)
+                for (int ячейка = 0; ячейка < ДанныеДляОтбора.КолСтр; ячейка++)
                 {
                     Результат[ячейка].ToString();
                     ДанныеДляОтбора.Ремонт[ячейка] = Результат[ячейка].ToString();
                 }
                 Отключиться(Коннектор);
-            }
-            else
-            {
-                MessageBox.Show("В разработке!");
+                Remont O_Rem;
+                O_Rem = new Remont();
+                O_Rem.Show();
             }
         }
 
@@ -241,6 +229,11 @@ namespace Сервис
                 MemoryStream ms = new MemoryStream(img);
                 pbFoto.Image = Image.FromStream(ms);
                 da.Dispose();
+        }
+
+        private void SplitContainer1_Panel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

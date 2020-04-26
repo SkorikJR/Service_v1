@@ -19,13 +19,9 @@ namespace Сервис
         {
             InitializeComponent();
         }
+        public int Foto;
         private void Remont_Load(object sender, EventArgs e)
         {
-
-
-
-
-
             ////Подгрузка переменных в поля.
             this.Text += ДанныеДляОтбора.Ремонт[0];
             tType.Text = ДанныеДляОтбора.Ремонт[2];
@@ -121,8 +117,26 @@ namespace Сервис
             tFilial_Priema.Text = Auth.Filial_All[int.Parse(ДанныеДляОтбора.Ремонт[25]) - 1, 2];
             tNowPlace.Text = Auth.Filial_All[int.Parse(ДанныеДляОтбора.Ремонт[26]) - 1, 2];
             ////Подгрузка переменных в поля.
+            try
+            {
+                //Загрузка Фото
+                MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+                    Auth.Запрос = $"SELECT COUNT(*) FROM `remont_f` WHERE `Id` = {ДанныеДляОтбора.Ремонт[0]}";
+                    MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                    Коннектор.Open();
+                    MySqlDataReader Результат = Комманда.ExecuteReader();
+                    while (Результат.Read())
+                    {
+                        Foto = int.Parse(Результат[0].ToString());
+                    }
+                    Отключиться(Коннектор);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось проверить наличие фото, проверьте подключение к БД!", "Err");
+                throw;
+            }
 
-            //Загрузка Фото
             try
             {
             Подгрузка_фото(int.Parse(ДанныеДляОтбора.Ремонт[0]));
@@ -130,15 +144,20 @@ namespace Сервис
             catch (Exception)
             {
             MessageBox.Show("Ошибка загрузки Фото!", "Err");
-
+                MessageBox.Show("Прикрепите фото к ремонту!");
             throw;
             }
 
             Привелегии();
             ЗагрКомбо();
         }
-        //УЗагрузка Фото
 
+        private static void Отключиться(MySqlConnection Коннектор)
+        {
+            Коннектор.Close();
+        }//отключение от БД
+
+        //Загрузка Фото
         private void Удалить_фото(int Id)
         {
             MessageBox.Show("Изображение будет удалено из базы без возможности восстановления, и загружено новое.", "Внимание!");
@@ -149,8 +168,7 @@ namespace Сервис
             Комманда.ExecuteReader();
         }
         private void Загрузить_фото(int Id)
-        {
-            //ЗАГРУЗКА ИзО
+        {      
             OpenFileDialog opn = new OpenFileDialog
             {
                 Filter = "Выберите изображение(*.jpg; *.png; *.jpeg)|*.jpg; *.png; *.jpeg"
@@ -183,17 +201,26 @@ namespace Сервис
         }
         private void Подгрузка_фото(int Id)
         {
-            MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
-            MySqlCommand cmd; MySqlDataAdapter da;
-            String qry = "SELECT * FROM remont_f WHERE Id = '" + Id + "'";
-            cmd = new MySqlCommand(qry, Коннектор);
-            da = new MySqlDataAdapter(cmd);
-            DataTable table = new DataTable();
-            da.Fill(table);
-            byte[] img = (byte[])table.Rows[0][1];
-            MemoryStream ms = new MemoryStream(img);
-            pbFoto.Image = Image.FromStream(ms);
-            da.Dispose();
+            //ЗАГРУЗКА ИзО
+            if (Foto > 0)
+            {
+                MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+                MySqlCommand cmd; MySqlDataAdapter da;
+                String qry = "SELECT * FROM remont_f WHERE Id = '" + Id + "'";
+                cmd = new MySqlCommand(qry, Коннектор);
+                da = new MySqlDataAdapter(cmd);
+                DataTable table = new DataTable();
+                da.Fill(table);
+                byte[] img = (byte[])table.Rows[0][1];
+                MemoryStream ms = new MemoryStream(img);
+                pbFoto.Image = Image.FromStream(ms);
+                da.Dispose();
+            }
+            else
+            {
+                MessageBox.Show("Фото не загружено! Загрузите фото устройства.");
+            }
+            
         }
 
         private void BReNew_Click(object sender, EventArgs e)

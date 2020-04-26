@@ -8,7 +8,7 @@ namespace Сервис
 {
     static class ДанныеДляОтбора
     {
-        public static int КолСтр = 29;
+        public static int КолСтр = 30;
         public static string[] Ремонт = new string[ДанныеДляОтбора.КолСтр];
         public static int КолФилиалов;
         public static string[,] Все_Ремонты;
