@@ -24,6 +24,7 @@ namespace Сервис
 
         private void All_Ing_Load(object sender, EventArgs e)
         {
+            dataGridView1.Rows.Clear();
             int строка = 1;
             Auth.Sotrudnik_All = new string[Auth.ВсегоСотрудников, Столбцы];
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)

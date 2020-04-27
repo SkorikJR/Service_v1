@@ -8,6 +8,6 @@ namespace Сервис
 { 
         static class ДанныеКлиента
         {
-        public static string[] Клиент;
+        //public static string[] Клиент;
         }
 }

@@ -19,6 +19,10 @@ namespace Сервис
         {
             InitializeComponent();
         }
+        public int Столбцы = 7;
+        public int NumOfRem = 0;
+        public string[,] Rems;
+        public string[] ID_Rem;
         public int Foto;
         private void Remont_Load(object sender, EventArgs e)
         {
@@ -144,10 +148,9 @@ namespace Сервис
             catch (Exception)
             {
             MessageBox.Show("Ошибка загрузки Фото!", "Err");
-                MessageBox.Show("Прикрепите фото к ремонту!");
             throw;
             }
-
+            Ремонты();
             Привелегии();
             ЗагрКомбо();
         }
@@ -276,8 +279,33 @@ namespace Сервис
             }
             void ИзменениеКлиента()
             {
-                bChangeKl.Enabled = true;
-                cbUvedomlen.Checked = true;
+                if (Auth.AcMode == "God")
+                {
+                    ИзменениеКл();
+                    tskid.Enabled = true;
+                }
+                else if (Auth.AcMode == "Admin")//Админ
+                {
+                    ИзменениеКл();
+                    tskid.Enabled = true;
+                }
+                else if (Auth.AcMode == "Ingeen")//Инженер
+                {
+                }
+                else if (Auth.AcMode == "Base")//Приемщик(Продавец)
+                {
+                    ИзменениеКл();
+                }
+                void ИзменениеКл()
+                {
+                    bChangeKl.Enabled = true;
+                    tName.Enabled = true;
+                    tFam.Enabled = true;
+                    tOtch.Enabled = true;
+                    tNoTel.Enabled = true;
+                    tHar.Enabled = true;
+                    tDateReg.Enabled = true;
+                }
             }
             void Выдача()
             {
@@ -299,7 +327,6 @@ namespace Сервис
             }
 
         }//ТРЕБУЕТ ДОРАБОТКИ
-
         private void ЗагрКомбо()
         {
             for (int i = 0; i < ДанныеДляОтбора.КолФилиалов; i++)
@@ -313,5 +340,94 @@ namespace Сервис
             listCompl.Items.Insert(0,"Дисплей");
             //checkedListBox1.Items.Insert(0, "Copenhagen");
         }// Подгрузка филиалов в "Перемещение"
+        private void Ремонты()
+        {
+           
+            MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+            try
+            {
+                Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `ID_Klient`=\"{Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 0]}\"";
+                Коннектор.Open();
+                MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                MySqlDataReader Результат = Комманда.ExecuteReader();
+                while (Результат.Read())
+                {
+                    NumOfRem = int.Parse(Результат[0].ToString());
+                }
+                Отключиться(Коннектор);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось загрузить количество ремонтов, проверьте соеденение с БД!", "Err");
+                throw;
+            }
+
+            if (NumOfRem > 0)
+            {
+                ID_Rem = new string[this.NumOfRem];
+                Auth.Запрос = $"SELECT `ID` FROM `remont` WHERE `ID_Klient`={Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 0]}";
+                Коннектор.Open();
+                MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                MySqlDataReader Результат = Комманда.ExecuteReader();
+                int Clc = 0;
+                while (Результат.Read())
+                {
+                    Результат[0].ToString();
+                    string Ячейка = Результат[0].ToString();
+                    ID_Rem[Clc] = Ячейка;
+                    Clc = ++Clc;
+                }
+                Отключиться(Коннектор);
+            }
+            Rems = new string[NumOfRem, Столбцы];
+            for (int i = 0; i < NumOfRem; i++)
+            {
+                Auth.Запрос = $"SELECT `ID`,`Type`,`Model`,`SN`,`Neispravnost`,`DateOfPriem`,`Vidano` FROM `remont` WHERE `ID_Klient`=\"{Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 0]}\" AND `ID`=\"{ID_Rem[i]}\"";
+                MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                Коннектор.Open();
+                MySqlDataReader Результат = Комманда.ExecuteReader();
+                Результат.Read();
+                for (int Clc = 0; Clc < 7; Clc++)
+                {
+                    string Ячейка = Результат[Clc].ToString();
+                    Rems[i, Clc] = Ячейка;
+                    if (Clc == 6)
+                    {
+                        if (Rems[i, Clc] == "0")
+                        {
+                            Rems[i, Clc] = "false";
+                        }
+                        else if (Rems[i, Clc] == "1")
+                        {
+                            Rems[i, Clc] = "true";
+                        }
+                    }//Подмена "На лету"
+                }
+                Отключиться(Коннектор);
+            }
+
+            int L = Rems.Length;
+            int H = Rems.Length / Столбцы;
+            L /= H;
+            for (int i = 0; i < H; i++)
+            {
+                string[] Tmp = new string[L];
+                for (int j = 0; j < L; j++)
+                {
+                    Tmp[j] = Rems[i, j];
+                }
+                ПодготовкаDataGrid(Tmp, dataGridView1);
+            }
+
+        }//Получаем список ремонтов
+        public void ПодготовкаDataGrid(string[] N, DataGridView Grid)
+
+        {
+            while (N.Length > Grid.ColumnCount)
+            {
+                Grid.Columns.Add("", "");
+            }
+            Grid.Rows.Add(N);
+        }//Выгрузка в DataGrid
     }
 }

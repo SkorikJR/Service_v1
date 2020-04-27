@@ -19,11 +19,6 @@ namespace Сервис
         {
             InitializeComponent();
         }
-
-        private void SplitContainer1_Panel2_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
         public int Столбцы = 7;
         public int NumOfRem = 0;
         public string[,] Rems;
@@ -91,6 +86,7 @@ namespace Сервис
             {
                 MessageBox.Show("У данного клиента еще нет ремонтов!");
             }
+            Привелегии();
         }
         private void Ремонты()
         {
@@ -122,7 +118,6 @@ namespace Сервис
                 Отключиться(Коннектор);
             }
         }//Получаем список ремонтов
-
         public void ПодготовкаDataGrid(string[] N, DataGridView Grid)
 
         {
@@ -136,5 +131,94 @@ namespace Сервис
         {
             Коннектор.Close();
         }//отключение от БД
+        private void Привелегии()
+        {
+            if (Auth.AcMode == "God")
+            {
+                ИзменениеКлиента();
+                tskid.Enabled = true;
+            }
+            else if (Auth.AcMode == "Admin")//Админ
+            {
+                ИзменениеКлиента();
+                tskid.Enabled = true;
+            }
+            else if (Auth.AcMode == "Ingeen")//Инженер
+            {
+            }
+            else if (Auth.AcMode == "Base")//Приемщик(Продавец)
+            {
+                ИзменениеКлиента();
+            }
+            void ИзменениеКлиента()
+            {
+                bChangeKl.Enabled = true;
+                tName.Enabled = true;
+                tFam.Enabled = true;
+                tOtch.Enabled = true;
+                tNoTel.Enabled = true;
+                tHar.Enabled = true;
+                tDateReg.Enabled = true;
+            }
+        }
+
+        private void BChangeKl_Click(object sender, EventArgs e)
+        {
+            button10.Visible = true;
+            bChangeKl.Visible = false;
+            button10.Enabled = true;
+            bChangeKl.Enabled = false;
+            tName.ReadOnly = false;
+            tFam.ReadOnly = false;
+            tOtch.ReadOnly = false;
+            tNoTel.ReadOnly = false;
+            tHar.ReadOnly = false;
+            tskid.ReadOnly = false;
+            tDateReg.ReadOnly = false;
+        }
+        private void Button10_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Auth.Запрос = $"UPDATE `klient` SET `Name` = @Name, `Family` = @Family, `Otchestvo` = @Otchestvo, `Phone` = @Phone, `Harakteristia` = @Harakteristia, `Date` = @Date, `Skidka` = @Skidka WHERE `klient`.`ID` = {Auth.Klient[0]};";
+                MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+                //Auth.Запрос = $"INSERT INTO remont_f(Id, Img) VALUES(@Id,@Img)";
+                MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+
+                Комманда.Parameters.Add("@Name", MySqlDbType.VarChar);
+                Комманда.Parameters["@Name"].Value = tName.Text;
+
+                Комманда.Parameters.Add("@Family", MySqlDbType.VarChar);
+                Комманда.Parameters["@Family"].Value = tFam.Text;
+
+                Комманда.Parameters.Add("@Otchestvo", MySqlDbType.VarChar);
+                Комманда.Parameters["@Otchestvo"].Value = tOtch.Text;
+
+                Комманда.Parameters.Add("@Phone", MySqlDbType.VarChar);
+                Комманда.Parameters["@Phone"].Value = tNoTel.Text;
+
+                Комманда.Parameters.Add("@Harakteristia", MySqlDbType.VarChar);
+                Комманда.Parameters["@Harakteristia"].Value = tHar.Text;
+
+                Комманда.Parameters.Add("@Date", MySqlDbType.VarChar);
+                Комманда.Parameters["@Date"].Value = tDateReg.Text;
+
+                Комманда.Parameters.Add("@Skidka", MySqlDbType.Int32);
+                Комманда.Parameters["@Skidka"].Value = tskid.Text;
+
+                Коннектор.Open();
+                MySqlDataReader Результат = Комманда.ExecuteReader();
+                Коннектор.Close();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось сохранить данные! Проверьте соеденение с БД.", "Err");
+                throw;
+            }
+            button10.Visible = false;
+            bChangeKl.Visible = true;
+            button10.Enabled = false;
+            bChangeKl.Enabled = true;
+        }//Сохранение изменений клиента
     }
 }

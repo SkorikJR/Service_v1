@@ -25,6 +25,7 @@ namespace Сервис
         public int Count_Kl;
         private void All_klients_Load(object sender, EventArgs e)
         {
+            dataGridView1.Rows.Clear();
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
             try
             {

@@ -41,6 +41,8 @@ namespace Сервис
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            dgProblem.Rows.Clear();
+            dgReady.Rows.Clear();
             try
             {
                 for (int i = 0; i < 4; i++)
@@ -650,6 +652,13 @@ namespace Сервис
             All_klients Open_all;
             Open_all = new All_klients();
             Open_all.Show();
+        }
+
+        private void BnKl_Click(object sender, EventArgs e)
+        {
+            N_klient Nkl;
+            Nkl = new N_klient();
+            Nkl.Show();
         }
     }
 }

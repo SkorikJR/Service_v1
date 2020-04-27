@@ -68,7 +68,7 @@ namespace Сервис
                     Auth.user = $"SkorikJR";//Static_BD
                     Auth.basename = "service_null";
                     Auth.pwd = $"{Auth.Pwd}";
-                    Auth.СтрокаПодключения = $"server={Auth.server};user={Auth.user};database={Auth.basename};password={Auth.pwd};";
+                    Auth.СтрокаПодключения = $"charset= utf8;server={Auth.server};user={Auth.user};database={Auth.basename};password={Auth.pwd};";
                     Auth.Запрос = $"SELECT * FROM `auth` WHERE `login`=\"{Auth.Login}\"";
                     MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
                     Коннектор.Open();

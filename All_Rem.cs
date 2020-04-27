@@ -22,6 +22,7 @@ namespace Сервис
         public int Столбцы = 11;
         private void All_Rem_Load(object sender, EventArgs e)//Нужно довести до ума!
         {
+            dataGridView1.Rows.Clear();
             int строка = 1;
             Auth.Remont_All = new string[Auth.ВсегоРемонтов, Столбцы];
             MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
@@ -88,7 +89,6 @@ namespace Сервис
         {
             Коннектор.Close();
         }//отключение от БД
-
         private void DataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             string Выбрано = dataGridView1.CurrentCell.Value.ToString();
