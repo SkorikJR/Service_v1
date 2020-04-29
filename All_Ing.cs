@@ -37,12 +37,19 @@ namespace Сервис
                 Результат.Read();
                 for (int ячейка = 0; ячейка < Столбцы; ячейка++)
                 {
-                    Auth.Sotrudnik_All[i, ячейка] = Результат[ячейка].ToString();
-                    if (ячейка == 9)
+                    if (ячейка == 6)
                     {
-                        int temp = int.Parse(Auth.Sotrudnik_All[i, ячейка]) - 1;
-                        Auth.Sotrudnik_All[i, ячейка] = Auth.Filial_All[temp, 2];
-                    }//попытка автозамены "На лету"
+                        Auth.Sotrudnik_All[i, ячейка] = DateTime.Parse(Результат[ячейка].ToString()).ToString("dd'.'MM'.'yyyy");
+                    }
+                    else
+                    {
+                        Auth.Sotrudnik_All[i, ячейка] = Результат[ячейка].ToString();
+                        if (ячейка == 9)
+                        {
+                            int temp = int.Parse(Auth.Sotrudnik_All[i, ячейка]) - 1;
+                            Auth.Sotrudnik_All[i, ячейка] = Auth.Filial_All[temp, 2];
+                        }
+                    }
                 }
                 строка = ++строка;
                 Отключиться(Коннектор);

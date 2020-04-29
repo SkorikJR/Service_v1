@@ -19,6 +19,8 @@ namespace Сервис
         public int ingeeneer;
         public int klient;
         public int remont;
+        public int КоличествоСписаний = 0;
+        public string ДатаПодСписание = "";
         public Loading()
         {
             InitializeComponent();
@@ -43,6 +45,7 @@ namespace Сервис
         {
             dgProblem.Rows.Clear();
             dgReady.Rows.Clear();
+            dgSpisanie.Rows.Clear();
             try
             {
                 for (int i = 0; i < 4; i++)
@@ -61,6 +64,7 @@ namespace Сервис
                         case 0:
                             filial = int.Parse(Результат[0].ToString());
                             ДанныеДляОтбора.КолФилиалов = filial;
+                            Auth.ВсегоФилиалов = filial;
                             break;
                         case 1:
                             ingeeneer = int.Parse(Результат[0].ToString());
@@ -93,11 +97,11 @@ namespace Сервис
             ПодготовкаМассивов("1");//Филиалы
             ПодготовкаМассивов("2");
             ПодготовкаМассивов("3");
-            //ПодготовкаМассивов("4");//Выгружает все ремонты в массив(Без фильтра)
             MainData_n("Ready");
             MainData_n("Problem");
+            MainData_n("Spisanie");
             Access(Auth.AcMode);//Auth.AcMode для отображения Прав пользователя
-            label1.Text += $"{remont}";
+            label1.Text = $"Всего ремонтов в Базе: {remont}";
         }
 
         public void Access(string Acc)
@@ -246,7 +250,7 @@ namespace Сервис
             {
                 try
                 {
-                    Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `Otremontirovano` = 1";
+                    Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `Otremontirovano` = 1 AND `Vidano` = 0";
                     MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
                     Коннектор.Open();
                     MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
@@ -275,7 +279,7 @@ namespace Сервис
             {
                 try
                 {
-                    Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE Problem = 1";
+                    Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `Problem` = 1 AND `Vidano` = 0";
                     MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
                     Коннектор.Open();
                     MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
@@ -301,53 +305,51 @@ namespace Сервис
                 }
                 
             }
+            else if (Acc == "Spisanie")
+            {
+                ДатаПодСписание = DateTime.Today.AddDays(-Auth.Время_Списания).ToString("yyyy'-'MM'-'dd");
+                try
+                {
+                    Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `dOconchaniyaR` <= \"{ДатаПодСписание}\" AND `Vidano` = 0 ";
+                    MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+                    Коннектор.Open();
+                    MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                    MySqlDataReader Результат = Комманда.ExecuteReader();
+                    Результат.Read();
+                    for (int i = 0; i < 1; i++)
+                    {
+                        Результат[0].ToString();
+                        КоличествоСписаний = int.Parse(Результат[0].ToString());
+                    }
+                    Отключиться(Коннектор);
+                }
+                catch (Exception)
+                {
+
+                    MessageBox.Show("Не удалось получить количество ремонтов под списание!", "Err");
+                    Exit("server.exe");
+                    Exit("httpd_usbwv8.exe");
+                    Exit("mysqld_usbwv8.exe");
+                    System.Environment.Exit(0);
+                    throw;
+                }
+                if (КоличествоСписаний > 0)
+                {
+                    MainData("Spisanie");
+                }
+            }
         }
 
         public void MainData(string Условие)//Генерация списка IDs ремонтов, которые подходят по условию.
         {
-            int nGot = 0;
-            int nProbl = 0;
-            try
-            {
-                Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE {Условие} = 1 AND Vidano = 0";
-                MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
-                Коннектор.Open();
-                MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
-                MySqlDataReader Результат = Комманда.ExecuteReader();
-                int Clc = 0;
-                while (Результат.Read())
-                {
-                    string sN = Результат[0].ToString();
-                    if (Условие == "Otremontirovano")
-                    {
-                        nGot = int.Parse(sN);
-                    }
-                    else if (Условие == "Problem")
-                    {
-                        nProbl = int.Parse(sN);
-                    }
-                    Clc = ++Clc;
-                }
-                Clc = 0;
-                Отключиться(Коннектор);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
 
-
-            Ремонты Rem = new Ремонты();
-            int Столбцы = 6;
-            Rem.ГотовыеРемонты = new string[nGot];
-            Rem.МассивГотовыхРемонтов = new string[nGot, Столбцы];
-            Rem.ПроблемныеРемонты = new string[nProbl];
-            Rem.МассивПроблемныхРемонтов = new string[nProbl, Столбцы];
-            if (nGot != 0)
+            if (Условие=="Spisanie")
             {
+                int Столбцы_Spis = 6;//Ко-во столбцов под списание.
                 try
                 {
-                    Auth.Запрос = $"SELECT `ID` FROM `remont` WHERE {Условие} = 1 AND Vidano = 0";
+                    Auth.Spisanie_ID = new string[КоличествоСписаний];
+                    Auth.Запрос = $"SELECT `ID` FROM `remont` WHERE `dOconchaniyaR` <= \"{ДатаПодСписание}\" AND `Vidano` = 0 ";
                     MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
                     Коннектор.Open();
                     MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
@@ -355,12 +357,8 @@ namespace Сервис
                     int Clc = 0;
                     while (Результат.Read())
                     {
-                        Результат[0].ToString();
                         string Ячейка = Результат[0].ToString();
-                        if (Условие == "Otremontirovano")
-                        {
-                            Rem.ГотовыеРемонты[Clc] = Ячейка;
-                        }
+                            Auth.Spisanie_ID[Clc] = Ячейка;
                         Clc = ++Clc;
                     }
                     Clc = 0;
@@ -368,159 +366,285 @@ namespace Сервис
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show("Не удалось получить количество готовых ремонтов.", "Err");
+                    MessageBox.Show("Не удалось получить список ремонтов под списание.", "Err");
                     Exit("server.exe");
                     Exit("httpd_usbwv8.exe");
                     Exit("mysqld_usbwv8.exe");
                     System.Environment.Exit(0);
                     throw;
                 }
-                if (Условие == "Otremontirovano")
+                try//Формируем таблицу
                 {
                     int строка = 1;
+                    Auth.Spisanie = new string[КоличествоСписаний, Столбцы_Spis];
                     MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
-                    for (int i = 0; i < nGot; i++)
+                    for (int i = 0; i < КоличествоСписаний; i++)
                     {
-                        Коннектор.Open();
-                        if (Условие == "Otremontirovano")
-                        {
-                            Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`dOconchaniyaR`,`ID_Master` FROM `remont` WHERE `ID`={Rem.ГотовыеРемонты[i]}";
-                        }
+                        Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`dOconchaniyaR`,`Filial_Now` FROM `remont` WHERE `ID`={Auth.Spisanie_ID[i]}";
                         MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                        Коннектор.Open();
                         MySqlDataReader Результат = Комманда.ExecuteReader();
                         Результат.Read();
-                        for (int ячейка = 0; ячейка < Столбцы; ячейка++)
+                        for (int ячейка = 0; ячейка < Столбцы_Spis; ячейка++)
                         {
-                            Результат[ячейка].ToString();
-                            if (Условие == "Otremontirovano")
+                            Auth.Spisanie[i, ячейка] = Результат[ячейка].ToString();
+                            if (ячейка == 4)
                             {
-                                Rem.МассивГотовыхРемонтов[(строка - 1), ячейка] = Результат[ячейка].ToString();
-                                if (ячейка == 5)
-                                {
-                                    int temp = int.Parse(Rem.МассивГотовыхРемонтов[(строка - 1), ячейка]) - 1;
-                                    Rem.МассивГотовыхРемонтов[(строка - 1), ячейка] = Auth.Sotrudnik_All[temp, 2];
-                                }//попытка автозамены "На лету"
-                            }
+                                Auth.Spisanie[i, ячейка] = DateTime.Parse(Auth.Spisanie[i, ячейка]).ToString("dd'.'MM'.'yyyy");
+                            }//попытка автозамены даты "На лету"
+                            if (ячейка == 5)
+                            {
+                                Auth.Spisanie[i, ячейка] = Auth.Filial_All[int.Parse(Auth.Spisanie[i, ячейка])-1, 2];
+                            }//попытка автозамены филиала "На лету"
                         }
                         строка = ++строка;
                         Отключиться(Коннектор);
                     }
-
-                    if (Условие == "Otremontirovano")
+                    int L = Auth.Spisanie.Length;
+                    int H = Auth.Spisanie.Length / Столбцы_Spis;
+                    L /= H;
+                    for (int i = 0; i < H; i++)
                     {
-                        int L = Rem.МассивГотовыхРемонтов.Length;
-                        int H = Rem.МассивГотовыхРемонтов.Length / 6;
-                        L /= H;
-                        for (int i = 0; i < H; i++)
+                        string[] Tmp = new string[L];
+                        for (int j = 0; j < L; j++)
                         {
-                            string[] Tmp = new string[L];
-                            for (int j = 0; j < L; j++)
-                            {
-                                Tmp[j] = Rem.МассивГотовыхРемонтов[i, j];
-                            }
-                            ПодготовкаDataGrid(Tmp, dgReady);
+                            Tmp[j] = Auth.Spisanie[i, j];
                         }
+                        ПодготовкаDataGrid(Tmp, dgSpisanie);
                     }
-                }
-                else if (true)
-                {
-                    MessageBox.Show("Ошибка инициализации", "Критическая ошибка");
-                    Exit("server.exe");
-                    Exit("httpd_usbwv8.exe");
-                    Exit("mysqld_usbwv8.exe");
-                    System.Environment.Exit(0);
-                }
-            }
-            else if (nProbl != 0)
-            {
-                try
-                {
-                    Auth.Запрос = $"SELECT `ID` FROM `remont` WHERE {Условие} = 1 AND Vidano = 0";
-                    MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
-                    Коннектор.Open();
-                    MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
-                    MySqlDataReader Результат = Комманда.ExecuteReader();
-                    int Clc = 0;
-                    while (Результат.Read())
-                    {
-                        Результат[0].ToString();
-                        string Ячейка = Результат[0].ToString();
-                        if (Условие == "Otremontirovano")
-                        {
-                            Rem.ГотовыеРемонты[Clc] = Ячейка;
-                        }
-                        else if (Условие == "Problem")
-                        {
-                            Rem.ПроблемныеРемонты[Clc] = Ячейка;
-                        }
-                        Clc = ++Clc;
-                    }
-                    Clc = 0;
-                    Отключиться(Коннектор);
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show("Не удалось получить количество готовых ремонтов.", "Err");
+                    MessageBox.Show("Не удалось сформировать список ремонтов под списание.", "Err");
                     Exit("server.exe");
                     Exit("httpd_usbwv8.exe");
                     Exit("mysqld_usbwv8.exe");
                     System.Environment.Exit(0);
                     throw;
-                }
-                if (Условие == "Problem")
-                {
-                    int строка = 1;
-                    MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
-                    for (int i = 0; i < nProbl; i++)
-                    {
-                        Коннектор.Open();
-                        if (Условие == "Problem")
-                        {
-                            Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`DateOfPriem`,`Prinyal` FROM `remont` WHERE `ID`={Rem.ПроблемныеРемонты[i]}";
-                        }
-
-                        MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
-                        MySqlDataReader Результат = Комманда.ExecuteReader();
-                        Результат.Read();
-                        for (int ячейка = 0; ячейка < Столбцы; ячейка++)
-                        {
-                            Результат[ячейка].ToString();
-                            if (Условие == "Problem")
-                            {
-                                Rem.МассивПроблемныхРемонтов[(строка - 1), ячейка] = Результат[ячейка].ToString();
-                                if (ячейка == 5)
-                                {
-                                    int temp = int.Parse(Rem.МассивПроблемныхРемонтов[(строка - 1), ячейка]) - 1;
-                                    Rem.МассивПроблемныхРемонтов[(строка - 1), ячейка] = Auth.Sotrudnik_All[temp, 2];
-                                }//попытка автозамены "На лету"
-                            }
-
-                        }
-                        строка = ++строка;
-                        Отключиться(Коннектор);
-                    }
-
-                    if (Условие == "Problem")
-                    {
-                        int L = Rem.МассивПроблемныхРемонтов.Length;
-                        int H = Rem.МассивПроблемныхРемонтов.Length / 6;
-                        L /= H;
-                        for (int i = 0; i < H; i++)
-                        {
-                            string[] Tmp = new string[L];
-                            for (int j = 0; j < L; j++)
-                            {
-                                Tmp[j] = Rem.МассивПроблемныхРемонтов[i, j];
-                            }
-                            ПодготовкаDataGrid(Tmp, dgProblem);
-                        }
-                    }
                 }
             }
             else
             {
-                MessageBox.Show("У Вас отсутствуют готовые либо проблемные ремонты, это может приводить к ошибкам");
+                int nGot = 0;
+                int nProbl = 0;
+                try
+                {
+                    Auth.Запрос = $"SELECT COUNT(*) FROM `remont` WHERE `{Условие}` = 1 AND Vidano = 0";
+                    MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+                    Коннектор.Open();
+                    MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                    MySqlDataReader Результат = Комманда.ExecuteReader();
+                    int Clc = 0;
+                    while (Результат.Read())
+                    {
+                        string sN = Результат[0].ToString();
+                        if (Условие == "Otremontirovano")
+                        {
+                            nGot = int.Parse(sN);
+                        }
+                        else if (Условие == "Problem")
+                        {
+                            nProbl = int.Parse(sN);
+                        }
+                        Clc = ++Clc;
+                    }
+                    Clc = 0;
+                    Отключиться(Коннектор);
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                Ремонты Rem = new Ремонты();
+                int Столбцы = 6;
+                Rem.ГотовыеРемонты = new string[nGot];
+                Rem.МассивГотовыхРемонтов = new string[nGot, Столбцы];
+                Rem.ПроблемныеРемонты = new string[nProbl];
+                Rem.МассивПроблемныхРемонтов = new string[nProbl, Столбцы];
+                if (nGot != 0)
+                {
+                    try
+                    {
+                        Auth.Запрос = $"SELECT `ID` FROM `remont` WHERE {Условие} = 1 AND Vidano = 0";
+                        MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+                        Коннектор.Open();
+                        MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                        MySqlDataReader Результат = Комманда.ExecuteReader();
+                        int Clc = 0;
+                        while (Результат.Read())
+                        {
+                            Результат[0].ToString();
+                            string Ячейка = Результат[0].ToString();
+                            if (Условие == "Otremontirovano")
+                            {
+                                Rem.ГотовыеРемонты[Clc] = Ячейка;
+                            }
+                            Clc = ++Clc;
+                        }
+                        Clc = 0;
+                        Отключиться(Коннектор);
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("Не удалось получить количество готовых ремонтов.", "Err");
+                        Exit("server.exe");
+                        Exit("httpd_usbwv8.exe");
+                        Exit("mysqld_usbwv8.exe");
+                        System.Environment.Exit(0);
+                        throw;
+                    }
+                    if (Условие == "Otremontirovano")
+                    {
+                        int строка = 1;
+                        MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
+                        for (int i = 0; i < nGot; i++)
+                        {
+                            Коннектор.Open();
+                            if (Условие == "Otremontirovano")
+                            {
+                                Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`dOconchaniyaR`,`ID_Master` FROM `remont` WHERE `ID`={Rem.ГотовыеРемонты[i]}";
+                            }
+                            MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                            MySqlDataReader Результат = Комманда.ExecuteReader();
+                            Результат.Read();
+                            for (int ячейка = 0; ячейка < Столбцы; ячейка++)
+                            {
+                                Результат[ячейка].ToString();
+                                if (Условие == "Otremontirovano")
+                                {
+                                    Rem.МассивГотовыхРемонтов[(строка - 1), ячейка] = Результат[ячейка].ToString();
+                                    if (ячейка == 4)
+                                    {
+                                        Rem.МассивГотовыхРемонтов[(строка - 1), ячейка] = DateTime.Parse(Rem.МассивГотовыхРемонтов[(строка - 1), ячейка]).ToString("dd'.'MM'.'yyyy");
+                                    }
+                                    if (ячейка == 5)
+                                    {
+                                        int temp = int.Parse(Rem.МассивГотовыхРемонтов[(строка - 1), ячейка]) - 1;
+                                        Rem.МассивГотовыхРемонтов[(строка - 1), ячейка] = Auth.Sotrudnik_All[temp, 2];
+                                    }//попытка автозамены "На лету"
+                                }
+                            }
+                            строка = ++строка;
+                            Отключиться(Коннектор);
+                        }
+
+                        if (Условие == "Otremontirovano")
+                        {
+                            int L = Rem.МассивГотовыхРемонтов.Length;
+                            int H = Rem.МассивГотовыхРемонтов.Length / 6;
+                            L /= H;
+                            for (int i = 0; i < H; i++)
+                            {
+                                string[] Tmp = new string[L];
+                                for (int j = 0; j < L; j++)
+                                {
+                                    Tmp[j] = Rem.МассивГотовыхРемонтов[i, j];
+                                }
+                                ПодготовкаDataGrid(Tmp, dgReady);
+                            }
+                        }
+                    }
+                    else if (true)
+                    {
+                        MessageBox.Show("Ошибка инициализации", "Критическая ошибка");
+                        Exit("server.exe");
+                        Exit("httpd_usbwv8.exe");
+                        Exit("mysqld_usbwv8.exe");
+                        System.Environment.Exit(0);
+                    }
+                }
+                else if (nProbl != 0)
+                {
+                    try
+                    {
+                        Auth.Запрос = $"SELECT `ID` FROM `remont` WHERE {Условие} = 1 AND Vidano = 0";
+                        MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+                        Коннектор.Open();
+                        MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                        MySqlDataReader Результат = Комманда.ExecuteReader();
+                        int Clc = 0;
+                        while (Результат.Read())
+                        {
+                            Результат[0].ToString();
+                            string Ячейка = Результат[0].ToString();
+                            if (Условие == "Otremontirovano")
+                            {
+                                Rem.ГотовыеРемонты[Clc] = Ячейка;
+                            }
+                            else if (Условие == "Problem")
+                            {
+                                Rem.ПроблемныеРемонты[Clc] = Ячейка;
+                            }
+                            Clc = ++Clc;
+                        }
+                        Clc = 0;
+                        Отключиться(Коннектор);
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("Не удалось получить количество готовых ремонтов.", "Err");
+                        Exit("server.exe");
+                        Exit("httpd_usbwv8.exe");
+                        Exit("mysqld_usbwv8.exe");
+                        System.Environment.Exit(0);
+                        throw;
+                    }
+                    if (Условие == "Problem")
+                    {
+                        int строка = 1;
+                        MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);// Обьявляем cBase как MySqlConnection(переменная строки подключения)
+                        for (int i = 0; i < nProbl; i++)
+                        {
+                            Коннектор.Open();
+                            if (Условие == "Problem")
+                            {
+                                Auth.Запрос = $"SELECT `ID`,`Type`,`Proizv`,`Model`,`DateOfPriem`,`Prinyal` FROM `remont` WHERE `ID`={Rem.ПроблемныеРемонты[i]}";
+                            }
+
+                            MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                            MySqlDataReader Результат = Комманда.ExecuteReader();
+                            Результат.Read();
+                            for (int ячейка = 0; ячейка < Столбцы; ячейка++)
+                            {
+                                Результат[ячейка].ToString();
+                                if (Условие == "Problem")
+                                {
+                                    Rem.МассивПроблемныхРемонтов[(строка - 1), ячейка] = Результат[ячейка].ToString();
+                                    if (ячейка == 4)
+                                    {
+                                        Rem.МассивПроблемныхРемонтов[i, ячейка] = DateTime.Parse(Rem.МассивПроблемныхРемонтов[i, ячейка]).ToString("dd'.'MM'.'yyyy");
+                                    }
+                                    if (ячейка == 5)
+                                    {
+                                        int temp = int.Parse(Rem.МассивПроблемныхРемонтов[(строка - 1), ячейка]) - 1;
+                                        Rem.МассивПроблемныхРемонтов[(строка - 1), ячейка] = Auth.Sotrudnik_All[temp, 2];
+                                    }//попытка автозамены "На лету"
+                                }
+
+                            }
+                            строка = ++строка;
+                            Отключиться(Коннектор);
+                        }
+
+                        if (Условие == "Problem")
+                        {
+                            int L = Rem.МассивПроблемныхРемонтов.Length;
+                            int H = Rem.МассивПроблемныхРемонтов.Length / 6;
+                            L /= H;
+                            for (int i = 0; i < H; i++)
+                            {
+                                string[] Tmp = new string[L];
+                                for (int j = 0; j < L; j++)
+                                {
+                                    Tmp[j] = Rem.МассивПроблемныхРемонтов[i, j];
+                                }
+                                ПодготовкаDataGrid(Tmp, dgProblem);
+                            }
+                        }
+                    }
+                }
             }
+            
         }
 
         private void Button5_Click(object sender, EventArgs e)//Settings
@@ -552,24 +676,6 @@ namespace Сервис
                 O_Rem = new Remont();
                 O_Rem.Show();
             }
-            /*else if (Столбец == "5")
-            {
-            Auth.Запрос = $"SELECT * FROM `ingeeneer` WHERE `ID`={Выбрано}";
-            MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
-            MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
-            Коннектор.Open();
-            MySqlDataReader Результат = Комманда.ExecuteReader();
-            Результат.Read();
-            for (int ячейка = 0; ячейка < 8; ячейка++)
-            {
-                    Результат[ячейка].ToString();
-                    ДанныеИнженера.Инженер[ячейка] = Результат[ячейка].ToString();
-            }
-            Отключиться(Коннектор);
-                Ingeeneer O_ing;
-                O_ing = new Ingeeneer();
-                O_ing.Show();
-            }*/
         }
 
         private void DgProblem_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -596,24 +702,6 @@ namespace Сервис
                 O_Rem = new Remont();
                 O_Rem.Show();
             }
-            /*else if (Столбец == "5")
-            {
-                Auth.Запрос = $"SELECT * FROM `ingeeneer` WHERE `ID`={Выбрано}";
-                MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
-                MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
-                Коннектор.Open();
-                MySqlDataReader Результат = Комманда.ExecuteReader();
-                Результат.Read();
-                for (int ячейка = 0; ячейка < 8; ячейка++)
-                {
-                    Результат[ячейка].ToString();
-                    ДанныеИнженера.Инженер[ячейка] = Результат[ячейка].ToString();
-                }
-                Отключиться(Коннектор);
-                Ingeeneer O_ing;
-                O_ing = new Ingeeneer();
-                O_ing.Show();
-            }*/
         }
 
         private void BExit_Click(object sender, EventArgs e)
@@ -659,6 +747,46 @@ namespace Сервис
             N_klient Nkl;
             Nkl = new N_klient();
             Nkl.Show();
+        }
+
+        private void Button2_Click(object sender, EventArgs e)
+        {
+            N_ingeeneer Ning;
+            Ning = new N_ingeeneer();
+            Ning.Show();
+        }
+
+        private void DgSpisanie_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            string Выбрано = dgSpisanie.CurrentCell.Value.ToString();
+            string Столбец = dgSpisanie.CurrentCell.ColumnIndex.ToString();
+
+            if (Столбец == "0")
+            {
+                Auth.Запрос = $"SELECT * FROM `remont` WHERE `ID`={Выбрано}";
+                MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
+                MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                Коннектор.Open();
+                MySqlDataReader Результат = Комманда.ExecuteReader();
+                Результат.Read();
+                for (int ячейка = 0; ячейка < ДанныеДляОтбора.КолСтр; ячейка++)
+                {
+                    Результат[ячейка].ToString();
+                    ДанныеДляОтбора.Ремонт[ячейка] = Результат[ячейка].ToString();
+
+                }
+                Отключиться(Коннектор);
+                Remont O_Rem;
+                O_Rem = new Remont();
+                O_Rem.Show();
+            }
+        }
+
+        private void BNew_Click(object sender, EventArgs e)
+        {
+            N_Remont NRem;
+            NRem = new N_Remont();
+            NRem.Show();
         }
     }
 }

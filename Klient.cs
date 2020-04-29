@@ -32,7 +32,7 @@ namespace Сервис
             tNoTel.Text = Auth.Klient[4];
             tHar.Text = Auth.Klient[5];
             tskid.Text = Auth.Klient[6];
-            tDateReg.Text = Auth.Klient[7];
+            tDateReg.Text = DateTime.Parse(Auth.Klient[7]).ToString("dd'.'MM'.'yyyy");
             try
             {
                 MySqlConnection Коннектор = new MySqlConnection(Auth.СтрокаПодключения);
@@ -103,6 +103,12 @@ namespace Сервис
                 {
                     string Ячейка = Результат[Clc].ToString();
                     Rems[i, Clc] = Ячейка;
+
+                    if (Clc == 5)
+                    {
+                        Rems[i, Clc]=DateTime.Parse(Rems[i, Clc]).ToString("dd'.'MM'.'yyyy");
+                    }
+
                     if (Clc == 6)
                     {
                         if (Rems[i, Clc] == "0")
@@ -201,7 +207,7 @@ namespace Сервис
                 Комманда.Parameters["@Harakteristia"].Value = tHar.Text;
 
                 Комманда.Parameters.Add("@Date", MySqlDbType.VarChar);
-                Комманда.Parameters["@Date"].Value = tDateReg.Text;
+                Комманда.Parameters["@Date"].Value = DateTime.Parse(tDateReg.Text).ToString("yyyy'-'MM'-'dd");
 
                 Комманда.Parameters.Add("@Skidka", MySqlDbType.Int32);
                 Комманда.Parameters["@Skidka"].Value = tskid.Text;
@@ -220,5 +226,10 @@ namespace Сервис
             button10.Enabled = false;
             bChangeKl.Enabled = true;
         }//Сохранение изменений клиента
+
+        private void SplitContainer1_Panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }

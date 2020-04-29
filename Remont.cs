@@ -33,13 +33,14 @@ namespace Сервис
             tModel.Text = ДанныеДляОтбора.Ремонт[3];
             tSerial.Text = ДанныеДляОтбора.Ремонт[4];
             tNeispr.Text = ДанныеДляОтбора.Ремонт[5];
-            tDataPriema.Text = ДанныеДляОтбора.Ремонт[6];
+            tDataPriema.Text = DateTime.Parse(ДанныеДляОтбора.Ремонт[6]).ToString("dd'.'MM'.'yyyy");
+            tCommit.Text = ДанныеДляОтбора.Ремонт[24];
             if (int.Parse(ДанныеДляОтбора.Ремонт[7]) == 1)
             {
                 cbDiagn.Checked = true;
                 tRezDiagn.Text = ДанныеДляОтбора.Ремонт[8];
                 tKto_Diagn.Text = Auth.Sotrudnik_All[int.Parse(ДанныеДляОтбора.Ремонт[28]) - 1, 2];
-                textBox2.Text = ДанныеДляОтбора.Ремонт[27];
+                textBox2.Text = DateTime.Parse(ДанныеДляОтбора.Ремонт[27]).ToString("dd'.'MM'.'yyyy");
             }
             if (int.Parse(ДанныеДляОтбора.Ремонт[7]) == 0)
             {
@@ -50,8 +51,8 @@ namespace Сервис
             {
                 cbReady.Checked = true;
                 tMaster.Text = Auth.Sotrudnik_All[int.Parse(ДанныеДляОтбора.Ремонт[12]) - 1, 2];
-                tRemEnd.Text = ДанныеДляОтбора.Ремонт[14];
-                tCommit.Text = ДанныеДляОтбора.Ремонт[24];
+                tRemEnd.Text = DateTime.Parse(ДанныеДляОтбора.Ремонт[14]).ToString("dd'.'MM'.'yyyy");
+                
             }
             if (int.Parse(ДанныеДляОтбора.Ремонт[13]) == 0)
             {
@@ -80,8 +81,8 @@ namespace Сервис
             if (int.Parse(ДанныеДляОтбора.Ремонт[18]) == 1)
             {
                 cbVidano.Checked = true;
-                tDataVid.Text = ДанныеДляОтбора.Ремонт[19];
-                this.Text += $" (Выдано {ДанныеДляОтбора.Ремонт[19]} Сотрудником: {Auth.Sotrudnik_All[int.Parse(ДанныеДляОтбора.Ремонт[29]) - 1, 2]})";
+                tDataVid.Text = DateTime.Parse(ДанныеДляОтбора.Ремонт[19]).ToString("dd'.'MM'.'yyyy");
+                this.Text += $" (Выдано {DateTime.Parse(ДанныеДляОтбора.Ремонт[19]).ToString("dd'.'MM'.'yyyy")} Сотрудником: {Auth.Sotrudnik_All[int.Parse(ДанныеДляОтбора.Ремонт[29]) - 1, 2]})";
             }//Чек бокс выдачи + приставка в Caption!
             if (int.Parse(ДанныеДляОтбора.Ремонт[18]) == 0)
             {
@@ -115,7 +116,7 @@ namespace Сервис
             tNoTel.Text = Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 4];
             tHar.Text = Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 5];
             tskid.Text = Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 6];
-            tDateReg.Text = Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 7];
+            tDateReg.Text = DateTime.Parse(Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 7]).ToString("dd'.'MM'.'yyyy");
             ////
             ////
             tFilial_Priema.Text = Auth.Filial_All[int.Parse(ДанныеДляОтбора.Ремонт[25]) - 1, 2];
@@ -378,46 +379,56 @@ namespace Сервис
                     Clc = ++Clc;
                 }
                 Отключиться(Коннектор);
-            }
-            Rems = new string[NumOfRem, Столбцы];
-            for (int i = 0; i < NumOfRem; i++)
-            {
-                Auth.Запрос = $"SELECT `ID`,`Type`,`Model`,`SN`,`Neispravnost`,`DateOfPriem`,`Vidano` FROM `remont` WHERE `ID_Klient`=\"{Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 0]}\" AND `ID`=\"{ID_Rem[i]}\"";
-                MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
-                Коннектор.Open();
-                MySqlDataReader Результат = Комманда.ExecuteReader();
-                Результат.Read();
-                for (int Clc = 0; Clc < 7; Clc++)
-                {
-                    string Ячейка = Результат[Clc].ToString();
-                    Rems[i, Clc] = Ячейка;
-                    if (Clc == 6)
-                    {
-                        if (Rems[i, Clc] == "0")
-                        {
-                            Rems[i, Clc] = "false";
-                        }
-                        else if (Rems[i, Clc] == "1")
-                        {
-                            Rems[i, Clc] = "true";
-                        }
-                    }//Подмена "На лету"
-                }
-                Отключиться(Коннектор);
+                SpisoK();
             }
 
-            int L = Rems.Length;
-            int H = Rems.Length / Столбцы;
-            L /= H;
-            for (int i = 0; i < H; i++)
+            void SpisoK()
             {
-                string[] Tmp = new string[L];
-                for (int j = 0; j < L; j++)
+                Rems = new string[NumOfRem, Столбцы];
+                for (int i = 0; i < NumOfRem; i++)
                 {
-                    Tmp[j] = Rems[i, j];
+                    Auth.Запрос = $"SELECT `ID`,`Type`,`Model`,`SN`,`Neispravnost`,`DateOfPriem`,`Vidano` FROM `remont` WHERE `ID_Klient`=\"{Auth.Klient_All[int.Parse(ДанныеДляОтбора.Ремонт[1]) - 1, 0]}\" AND `ID`=\"{ID_Rem[i]}\"";
+                    MySqlCommand Комманда = new MySqlCommand(Auth.Запрос, Коннектор);
+                    Коннектор.Open();
+                    MySqlDataReader Результат = Комманда.ExecuteReader();
+                    Результат.Read();
+                    for (int Clc = 0; Clc < 7; Clc++)
+                    {
+                        string Ячейка = Результат[Clc].ToString();
+                        Rems[i, Clc] = Ячейка;
+                        if (Clc == 5)
+                        {
+                            Rems[i, Clc] = DateTime.Parse(Rems[i, Clc]).ToString("dd'.'MM'.'yyyy");
+                        }
+                        if (Clc == 6)
+                        {
+                            if (Rems[i, Clc] == "0")
+                            {
+                                Rems[i, Clc] = "false";
+                            }
+                            else if (Rems[i, Clc] == "1")
+                            {
+                                Rems[i, Clc] = "true";
+                            }
+                        }//Подмена "На лету"
+                    }
+                    Отключиться(Коннектор);
                 }
-                ПодготовкаDataGrid(Tmp, dataGridView1);
+
+                int L = Rems.Length;
+                int H = Rems.Length / Столбцы;
+                L /= H;
+                for (int i = 0; i < H; i++)
+                {
+                    string[] Tmp = new string[L];
+                    for (int j = 0; j < L; j++)
+                    {
+                        Tmp[j] = Rems[i, j];
+                    }
+                    ПодготовкаDataGrid(Tmp, dataGridView1);
+                }
             }
+            
 
         }//Получаем список ремонтов
         public void ПодготовкаDataGrid(string[] N, DataGridView Grid)

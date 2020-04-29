@@ -57,7 +57,14 @@ namespace Сервис
                     Результат.Read();
                     for (int ячейка = 0; ячейка < Столбцы; ячейка++)
                     {
-                        Auth.Klient_All[i, ячейка] = Результат[ячейка].ToString();
+                        if (ячейка == 7)
+                        {
+                            Auth.Klient_All[i, ячейка] = DateTime.Parse(Результат[ячейка].ToString()).ToString("dd'.'MM'.'yyyy");
+                        }
+                        else
+                        {
+                            Auth.Klient_All[i, ячейка] = Результат[ячейка].ToString();
+                        }
                     }
                     строка = ++строка;
                     Отключиться(Коннектор);

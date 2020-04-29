@@ -25,10 +25,15 @@ namespace Сервис
         public static string[] Klient = new string[8];//Данные клиента
         public static string[,] Filial_All;//Данные филиалов(Всех, для выборки)
         public static string[,] Remont_All;//Данные филиалов(Всех, для выборки)
-
+        public static string[] Spisanie_ID = new string[8];//Данные клиента
+        public static string[,] Spisanie;
         public static int ВсегоРемонтов;
         public static int ВсегоСотрудников;
         public static int ВсегоКлиентов;
-        
+        public static int ВсегоФилиалов;
+        public static int Время_Списания = 30;//Из настрроек!
+        public static int ID_Клиента;//Из нового ремонта
+        public static string[] Klient_vNewRem;
+        public static string[,] All_Klient_vNewRem;
     }
 }

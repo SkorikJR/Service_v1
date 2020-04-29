@@ -48,9 +48,6 @@ namespace Сервис
             //Получим дату
             tDateReg.Text = DateTime.Today.ToShortDateString();
             //Получим дату
-
-
-
         }
 
         private static void Отключиться(MySqlConnection Коннектор)
@@ -96,7 +93,7 @@ namespace Сервис
                     Комманда.Parameters["@Date"].Value = tDateReg.Text;
 
                     Комманда.Parameters.Add("@Skidka", MySqlDbType.Int32);
-                    Комманда.Parameters["@Skidka"].Value = tskid.Text;
+                    Комманда.Parameters["@Skidka"].Value = DateTime.Parse(tskid.Text).ToString("yyyy'-'MM'-'dd");
 
                     Коннектор.Open();
                     MySqlDataReader Результат = Комманда.ExecuteReader();

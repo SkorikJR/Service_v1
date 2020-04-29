@@ -89,7 +89,7 @@ namespace Сервис
             tOtch.Text = $"{ДанныеИнженера.Инженер[3]}";
             tNoTel.Text = $"{ДанныеИнженера.Инженер[4]}";
             tSpec.Text = $"{ДанныеИнженера.Инженер[5]}";
-            tDatPriem.Text = $"{ДанныеИнженера.Инженер[6]}";
+            tDatPriem.Text = DateTime.Parse(ДанныеИнженера.Инженер[6].ToString()).ToString("dd'.'MM'.'yyyy");
             tNote.Text= $"{ДанныеИнженера.Инженер[7]}";
         }
 
@@ -126,8 +126,16 @@ namespace Сервис
                 Результат.Read();
                 for (int Clc = 0; Clc < 7;Clc++)
                 {
-                    string Ячейка = Результат[Clc].ToString();
-                    ремонты[i, Clc] = Ячейка;
+                    if (Clc == 5)
+                    {
+                        string Ячейка_ = DateTime.Parse(Результат[Clc].ToString()).ToString("dd'.'MM'.'yyyy"); ;
+                        ремонты[i, Clc] = Ячейка_;
+                    }
+                    else
+                    {
+                        string Ячейка = Результат[Clc].ToString();
+                        ремонты[i, Clc] = Ячейка;
+                    }
                 } 
                 Отключиться(Коннектор);
             }
